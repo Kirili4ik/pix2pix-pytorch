@@ -1,7 +1,7 @@
 import torch
 from torchvision import transforms
 
-import wandb
+#import wandb
 
 
 @torch.no_grad()
@@ -18,12 +18,12 @@ def validate(model, loader, is_saving=False, device='cuda'):
         total_loss_G = total_loss_G + loss_G
         total_ssim   = total_ssim   + ssim
 
-    if is_saving:
-        wandb.log({'examples':
-                  [wandb.Image(transforms.ToPILImage()(real_x[0]*0.5 + 0.5), caption='real_x'),
-                  wandb.Image(transforms.ToPILImage()(model.generate(real_x)[0]*0.5 + 0.5), caption='generated'),
-                  wandb.Image(transforms.ToPILImage()(real_y[0]*0.5 + 0.5), caption='real_y')
-                  ]})
+    #if is_saving:
+    #    wandb.log({'examples':
+    #              [wandb.Image(transforms.ToPILImage()((real_x[0]*0.5 + 0.5).cpu()), caption='real_x'),
+    #              wandb.Image(transforms.ToPILImage()((model.generate(real_x)[0]*0.5 + 0.5).), caption='generated'),
+    #              wandb.Image(transforms.ToPILImage()(real_y[0]*0.5 + 0.5), caption='real_y')
+    #              ]})
 
     return total_loss_D / len(loader), total_loss_G / len(loader), total_ssim / len(loader)
 
@@ -41,12 +41,12 @@ def test(model, loader, device='cuda'):
         total_loss_D = total_loss_D + loss_D
         total_loss_G = total_loss_G + loss_G
 
-        if i % 2 == 0:
-            wandb.log({'examples':
-                  [wandb.Image(transforms.ToPILImage()(real_x[0]*0.5 + 0.5), caption='real_x'),
-                  wandb.Image(transforms.ToPILImage()(model.generate(real_x)[0]*0.5 + 0.5), caption='generated'),
-                  wandb.Image(transforms.ToPILImage()(real_y[0]*0.5 + 0.5), caption='real_y')
-                  ]})
+        #if i % 2 == 0:
+        #    wandb.log({'examples':
+        #          [wandb.Image(transforms.ToPILImage()(real_x[0]*0.5 + 0.5), caption='real_x'),
+        #          wandb.Image(transforms.ToPILImage()(model.generate(real_x)[0]*0.5 + 0.5), caption='generated'),
+        #          wandb.Image(transforms.ToPILImage()(real_y[0]*0.5 + 0.5), caption='real_y')
+        #          ]})
 
 
     return total_loss_D / len(loader), total_loss_G / len(loader)

@@ -4,7 +4,6 @@ import random
 import os
 from torch.utils.data import DataLoader
 import torchvision
-import torchvision
 from torchvision import transforms
 from PIL import Image
 
@@ -80,3 +79,44 @@ def my_transforms_val(sample, target):
     return sample, target
 
 
+
+
+### for day2night dataset
+class MyDataset_day2night(torch.utils.data.Dataset):
+    """Custom dataset."""
+
+    def __init__(self, root_dir, transform=None):
+        """
+        Args:
+            root_dir (string): Directory with train/val/test the images.
+            transform (callable, optional): Optional transform to be applied on a sample.
+        """
+        self.root_dir = root_dir
+        self.transform = transform
+
+        self.df = pd.DataFrame({'filename':np.arange(len(os.listdir(path=root_dir)))})
+        for root, dirs, files in os.walk(root_dir):
+            for i, filename in enumerate(files):
+                self.df.loc[i, 'filename'] = filename
+
+
+    def __len__(self):
+        return len(os.listdir(path=self.root_dir))
+
+
+    def __getitem__(self, idx):
+
+        img_name = self.root_dir + self.df.loc[idx, 'filename']
+        image = Image.open(img_name)
+
+        image = torchvision.transforms.functional.to_tensor(image)
+
+        width = int(image.size(-1) / 2)
+        image, target = image[:, :, width:], image[:, :, :width]
+
+        if self.transform:
+            image, target = self.transform(image, target)
+
+        sample = {'x': image, 'target': target}
+
+        return sample

@@ -5,24 +5,28 @@ import os
 
 
 from my_utils import set_seed, count_parameters
-from my_dataset import MyDataset, my_transforms_tr, my_transforms_val
+from my_dataset import MyDataset, MyDataset_day2night, my_transforms_tr, my_transforms_val
 from model import Pix2Pix
 from val_test import validate, test
 
-import wandb
-from tqdm import tqdm
-
+#import wandb
+#from tqdm import tqdm
 
 
 
 
 if __name__ == "__main__":
 
-    #os.system("wget http://efrosgans.eecs.berkeley.edu/pix2pix/datasets/facades.tar.gz")
-    #os.system("tar -xzf facades.tar.gz")
-
+    os.system("wget http://efrosgans.eecs.berkeley.edu/pix2pix/datasets/facades.tar.gz")
+    os.system("tar -xzf facades.tar.gz")
     BATCH_SIZE = 1
-    NUM_EPOCHS = 1
+    NUM_EPOCHS = 200
+
+    ### use for day2night dataset
+    # !wget http://efrosgans.eecs.berkeley.edu/pix2pix/datasets/night2day.tar.gz
+    # !tar xvzf night2day.tar.gz
+    # BATCH_SIZE = 4
+    # NUM_EPOCHS = 17
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(device)
@@ -30,9 +34,14 @@ if __name__ == "__main__":
     set_seed(21)
 
     ### dataset creation
-    train_set = MyDataset(root_dir='../facades/train/', transform=my_transforms_tr)
-    val_set   = MyDataset(root_dir='../facades/val/', transform=my_transforms_val)
-    test_set  = MyDataset(root_dir='../facades/test/', transform=my_transforms_val)
+    train_set = MyDataset(root_dir='facades/train/', transform=my_transforms_tr)
+    val_set   = MyDataset(root_dir='facades/val/', transform=my_transforms_val)
+    test_set  = MyDataset(root_dir='facades/test/', transform=my_transforms_val)
+
+    ### day2night
+    # train_set = MyDataset(root_dir='night2day/train/', transform=my_transforms_tr)
+    # val_set   = MyDataset(root_dir='night2day/val/', transform=my_transforms_val)
+    # test_set  = MyDataset(root_dir='night2day/test/', transform=my_transforms_val)
 
     ### dataloaders
     train_loader = DataLoader(train_set, batch_size=BATCH_SIZE,
@@ -60,8 +69,8 @@ if __name__ == "__main__":
                 init.constant_(m.bias.data, 0.0)
 
     ### WANDB
-    wandb.init(project='dl-ht3')
-    wandb.watch(model)
+    #wandb.init(project='')
+    #wandb.watch(model)
 
     ### create optimizers
     opt_D = torch.optim.Adam(model.netD.parameters(), lr=0.0002, betas=(0.5, 0.999))
@@ -69,7 +78,7 @@ if __name__ == "__main__":
 
 
     ### Train Loop
-    for ep_num in tqdm(range(NUM_EPOCHS)):
+    for ep_num in range(NUM_EPOCHS):
         model.train()
         total_loss_D, total_loss_G = 0, 0
         total_ssim = 0
@@ -82,8 +91,6 @@ if __name__ == "__main__":
             total_loss_G = total_loss_G + loss_G
             total_ssim = total_ssim + ssim
             torch.nn.utils.clip_grad_norm_(model.parameters(), 15)
-            if i == 3:
-                break
 
         if ep_num % 20 == 0:
             val_loss_D, val_loss_G, val_ssim = validate(model, val_loader, is_saving=True, device=device)
@@ -93,12 +100,12 @@ if __name__ == "__main__":
         if ep_num >= 150 and ep_num % 25 == 0:
             a, b = test(model, test_loader, device)
 
-        wandb.log({'train_D':total_loss_D/len(train_loader),
-                   'train_G_l1+cgan':total_loss_G/len(train_loader),
-                   'train_ssim':total_ssim/len(train_loader),
-                   'val_D':val_loss_D,
-                   'val_G_l1+cgan':val_loss_G,
-                   'val_ssim':val_ssim})
+        #wandb.log({'train_D':total_loss_D/len(train_loader),
+        #           'train_G_l1+cgan':total_loss_G/len(train_loader),
+        #           'train_ssim':total_ssim/len(train_loader),
+        #           'val_D':val_loss_D,
+        #           'val_G_l1+cgan':val_loss_G,
+        #           'val_ssim':val_ssim})
 
     ### save model
     torch.save({
