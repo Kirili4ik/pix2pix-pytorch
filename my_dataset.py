@@ -53,12 +53,8 @@ def my_transforms_tr(sample, target):
     y = random.randint(0, 30)
     flip = random.random() > 0.5
 
-    # to PIL and back cause we are obliged to use old torch vesrsions!!!
-    sample = transforms.Resize([286, 286], Image.BICUBIC)(transforms.ToPILImage()(sample))
-    target = transforms.Resize([286, 286], Image.BICUBIC)(transforms.ToPILImage()(target))
-
-    sample = transforms.ToTensor()(sample)
-    target = transforms.ToTensor()(target)
+    sample = transforms.Resize([286, 286], Image.BICUBIC)(sample)
+    target = transforms.Resize([286, 286], Image.BICUBIC)(target)
 
     #sample = transforms.RandomCrop(256)(sample)
     sample = sample[:, x:256 + x, y:256 + y]
