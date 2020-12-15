@@ -1,4 +1,4 @@
-# Pix2Pix model written in PyTorch
+# Pix2Pix model in PyTorch
 
 This repository is an implementation of model described in [Pix2Pix (Isola et al., 2016)](https://arxiv.org/pdf/1611.07004.pdf). 
 
